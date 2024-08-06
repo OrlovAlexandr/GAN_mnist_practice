@@ -1,0 +1,1 @@
+# GAN Fashion MNIST practice
