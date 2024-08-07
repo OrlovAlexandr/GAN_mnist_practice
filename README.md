@@ -1,6 +1,8 @@
+Here's the fixed README:
+
 # GAN Fashion MNIST practice
 
-This project implements a Generative Adversarial Network (GAN) for training on the MNIST dataset. The primary goal of this project is to practice training a GAN model and experimenting with different training strategies. The code includes support for conditional GANs, different strategies for discriminator training, and tensorboard logging for visualizing training progress.
+This project implements a Generative Adversarial Network (GAN) for training on the Fashion MNIST dataset. The primary goal of this project is to practice training a GAN model and experimenting with different training strategies. The code includes support for conditional GANs, different strategies for discriminator training, and tensorboard logging for visualizing training progress.
 
 ## Table of Contents
 - [Installation](#installation)
@@ -26,7 +28,7 @@ Ensure you have the appropriate versions of the dependencies listed in `requirem
 
 You can train the model using the following command:
 
-```python
+```bash
 python main.py
 ```
 
@@ -42,8 +44,9 @@ This will start the training process. The training logs, including loss metrics 
 
 ## Project Structure
 
+- `main.py`: The entry point script for training the GAN model.
 - `train.py`: The main script for training the GAN model.
 - `models.py`: Contains the GAN model definitions (generator, discriminator).
-- `config.py`: Configuration file for setting up model parameters, paths, and other settings.
+- `config.py`: Configuration file for setting up model parameters, options, and other settings.
 - `requirements.txt`: Lists the required Python packages.
 - `utils/`: Utility folder with functions for initializing weights, computing gradient penalties, etc.
