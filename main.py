@@ -4,8 +4,8 @@ import torchvision
 from config import cfg
 from torch.utils.data import DataLoader
 from torchvision import transforms
+from train import train_model
 from utils.parameters import create_train_path
-from utils.train import train_model
 
 
 logging.basicConfig(level=logging.INFO)

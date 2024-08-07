@@ -13,7 +13,6 @@ from models import initialize_weights
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-
 from utils.gradient_penalty import gradient_penalty
 from utils.gradient_penalty import gradient_penalty_cond
 from utils.plotting import create_text_block

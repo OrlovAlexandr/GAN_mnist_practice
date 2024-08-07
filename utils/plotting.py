@@ -84,7 +84,10 @@ def anim_plot(
 
 
 def create_text_block() -> str:
-    datetime_object = datetime.strptime('2024-' + cfg.now, '%Y-%m-%d_%H-%M-%S')
+    datetime_object = datetime.strptime(
+        f"{datetime.now().strftime('%Y')}-{cfg.now}",
+        '%Y-%m-%d_%H-%M-%S',
+    )
     txt_date = f"Train start: {datetime_object.strftime('%d %B %Y, %H:%M:%S')}"
     txt_img = f"Image info: {cfg.batch_size}x{cfg.channels}x{cfg.img_size}x{cfg.img_size}\n"
     txt_optim = '''Optimizer: {}, learning rate = {}\n'''.format(

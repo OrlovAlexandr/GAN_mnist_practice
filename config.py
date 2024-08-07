@@ -17,6 +17,7 @@ class Optimizer(enum.Enum):
 class Strategy(enum.Enum):
     CLIP_WEIGHT = enum.auto()
     GRAD_PENALTY = enum.auto()
+    NONE = enum.auto()
 
 
 @dataclass
