@@ -3,12 +3,15 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+import cv2
 import numpy as np
 import pandas as pd
 import torch
 from config import Strategy
 from config import cfg
 from models import GANModel
+from models import Generator
+from models import GeneratorCond
 from models import initialize_weights
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -16,7 +19,7 @@ from tqdm import tqdm
 from utils.gradient_penalty import gradient_penalty
 from utils.gradient_penalty import gradient_penalty_cond
 from utils.plotting import create_text_block
-from utils.plotting import get_imgs
+from utils.plotting import get_image
 
 
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +30,9 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
                 train_path: Path,
                 conditional: bool = cfg.conditional,
                 device: str = cfg.device,
-                ):
+                ) -> Generator | GeneratorCond:
+    image_path = train_path / 'images'
+    image_path.mkdir(parents=True, exist_ok=True)
     if conditional:
         model = GANModel(model_type='gan_cond', optimizer=cfg.optimizer)
     else:
@@ -60,7 +65,6 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
         for batch_idx, (real, labels) in enumerate(loader):
             real = real.to(device)  # noqa: PLW2901
             cur_batch_size = real.shape[0]
-
             if conditional:
                 labels = labels.to(device)  # noqa: PLW2901
 
@@ -129,8 +133,7 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
                 losses_disc_step.append(np.mean(losses_disc_per_batch))
                 losses_gen_step.append(np.mean(losses_gen_per_batch))
 
-                losses_disc_per_batch = []
-                losses_gen_per_batch = []
+                losses_disc_per_batch, losses_gen_per_batch = [], []
 
                 with torch.no_grad():
                     for name, param in generator.named_parameters():
@@ -144,20 +147,26 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
                         )
 
                     # Сохранение результата каждый степ
-                    if conditional:
-                        step_fake_img = generator(noise, labels)
-                        real_output = train_path / f'real_{step:03d}.png'
-                        get_imgs(
-                            real, real_output, losses_disc_step, losses_gen_step,
+                    fake_output = image_path / f'step_{step:03d}.png'
+                    if not conditional:
+                        step_fake_img = generator(fixed_noise)
+                        get_image(
+                            step_fake_img, fake_output, losses_disc_step, losses_gen_step,
                             epoch, cfg.num_epochs, steps_div, text=txt_blocks, show=False, save=True,
                         )
                     else:
-                        step_fake_img = generator(fixed_noise)
-                    fake_output = train_path / f'step_{step:03d}.png'
-                    get_imgs(
-                        step_fake_img, fake_output, losses_disc_step, losses_gen_step,
-                        epoch, cfg.num_epochs, steps_div, text=txt_blocks, show=False, save=True,
-                    )
+                        step_fake_img = generator(noise, labels)
+                        real_output = image_path / f'real_{step:03d}.png'
+                        real_image_array = get_image(
+                            real, real_output, losses_disc_step, losses_gen_step,
+                            epoch, cfg.num_epochs, steps_div, text=txt_blocks, show=False, save=False,
+                        )
+                        fake_image_array = get_image(
+                            step_fake_img, fake_output, losses_disc_step, losses_gen_step,
+                            epoch, cfg.num_epochs, steps_div, text=txt_blocks, show=False, save=False,
+                        )
+                        save_combined_images(fake_image_array, real_image_array, step, image_path)
+
                 step += 1
         losses_disc.append(np.mean(losses_disc_per_epoch))
         losses_gen.append(np.mean(losses_gen_per_epoch))
@@ -169,9 +178,22 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
         torch.save(generator, str(train_path / 'gen_model.pth'))
     saving_time = re.sub("[^0-9]", "", str(datetime.now())[5:-7])
     last_fake_output = Path() / 'imgs' / f'img_{cfg.now}_out_{saving_time}'
-    get_imgs(
+    get_image(
         step_fake_img, last_fake_output, losses_disc_step, losses_gen_step,
         epoch, cfg.num_epochs, steps_div, text=txt_blocks, show=False, save=True,
     )
 
     return generator
+
+
+def save_combined_images(fake_image_array, real_image_array, step, train_path):
+    fake_image_grid = fake_image_array[30:270, 225:1225, :]  # Crop 2 lines from fake image grid
+    cv2.rectangle(real_image_array, (225, 270), (1225, 510), (255, 255, 255), -1)  # Erase 2 bottom lines
+    real_image_array[300:540, 225:1225, :] = fake_image_grid  # Paste fake image grid
+    cv2.putText(real_image_array, 'REAL', (700, 30), cv2.FONT_HERSHEY_DUPLEX,
+                0.6, (0, 0, 0), 1, lineType=cv2.LINE_AA)
+    cv2.putText(real_image_array, 'FAKE', (700, 300), cv2.FONT_HERSHEY_DUPLEX,
+                0.6, (0, 0, 0), 1, lineType=cv2.LINE_AA)
+    cv2.imwrite(str(
+        train_path / f'step_{step:03d}.png'), real_image_array, [cv2.IMWRITE_PNG_COMPRESSION, 5],
+    )

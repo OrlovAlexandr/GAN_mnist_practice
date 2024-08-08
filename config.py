@@ -35,10 +35,10 @@ cfg.num_epochs = 70
 cfg.feat_disc = 16
 cfg.feat_gen = 16
 cfg.disc_iters = 3
-cfg.strategy = Strategy.CLIP_WEIGHT  # Clipping weights = 0, Gradient penalty = 1
+cfg.strategy = Strategy.GRAD_PENALTY  # Clipping weights = 0, Gradient penalty = 1
 cfg.clip_value = 0.01
 cfg.gp_lambda = 10
-cfg.conditional = False
+cfg.conditional = True
 cfg.gen_embedding = 200
 cfg.num_classes = 10
 cfg.wgan = 1

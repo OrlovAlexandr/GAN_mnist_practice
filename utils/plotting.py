@@ -1,6 +1,8 @@
+import io
 from datetime import datetime
 from pathlib import Path
 
+import cv2
 import numpy as np
 import torch
 import torchvision
@@ -14,7 +16,16 @@ def tensor_to_image(tensor: torch.Tensor) -> torch.Tensor:
     return ((tensor + 1) / 2).clamp(min=0, max=1)
 
 
-def get_imgs(
+def get_image_from_fig(fig, dpi=180) -> np.ndarray:
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=dpi)
+    buf.seek(0)
+    img_arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+    buf.close()
+    return cv2.imdecode(img_arr, 1)
+
+
+def get_image(
         fake: torch.Tensor,
         save_path: Path,
         d_loss,
@@ -24,8 +35,8 @@ def get_imgs(
         steps: int,
         text: str | None = None,
         show: bool = False,
-        save: bool = True) -> None:
-    plt.figure(figsize=(16, 9))
+        save: bool = True) -> np.ndarray:
+    fig = plt.figure(figsize=(16, 9))
     # Images
     images_grid = torchvision.utils.make_grid(fake[:32], pad_value=0, nrow=8, padding=5, normalize=True)
     image_array = np.clip(images_grid[0].to('cpu').numpy(), 0, 1)
@@ -48,6 +59,7 @@ def get_imgs(
         plt.show()
     else:
         plt.close()
+    return get_image_from_fig(fig, dpi=100)
 
 
 def anim_plot(

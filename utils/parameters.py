@@ -9,7 +9,7 @@ def create_params_dict() -> dict:
 
 
 def create_train_path() -> Path:
-    train_path = Path() / 'imgs' / 'trains' / f'train_{cfg.now}'
+    train_path = Path() / 'static' / 'images' / 'trains' / f'train_{cfg.now}'
     train_path.mkdir(parents=True, exist_ok=True)
     params_dict = create_params_dict()
     params_dict['time'] = cfg.now

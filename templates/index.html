@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAN Configurator</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GAN Configurator</h1>
+        <form id="config-form">
+            <div class="form-group">
+                <label for="learn_rate">Learning Rate:</label>
+                <input type="text" id="learn_rate" name="learn_rate" value="{{ config.learn_rate }}">
+            </div>
+            <div class="form-group">
+                <label for="batch_size">Batch Size:</label>
+                <input type="text" id="batch_size" name="batch_size" value="{{ config.batch_size }}">
+            </div>
+            <div class="form-group">
+                <label for="num_epochs">Number of Epochs:</label>
+                <input type="text" id="num_epochs" name="num_epochs" value="{{ config.num_epochs }}">
+            </div>
+            <button type="submit">Update Configuration</button>
+        </form>
+        <button id="start-training">Start Training</button>
+        <h2>Generated Images</h2>
+        <img id="generated-image" src="" alt="Generated Image" width="100%">
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function updateImage() {
+                $.get("/get_latest_image", function(data) {
+                    $("#generated-image").attr("src", data.image_url);
+                });
+            }
+
+            $("#config-form").on("submit", function(event) {
+                event.preventDefault();
+                $.post("/update_config", $(this).serialize(), function(data) {
+                    alert(data.message);
+                });
+            });
+
+            $("#start-training").on("click", function() {
+                $.post("/start_training", function(data) {
+                    alert(data.message);
+                    if (data.status === "success") {
+                        setInterval(updateImage, 20000);
+                    }
+                });
+            setInterval(updateImage, 20000);
+            updateImage();
+            });
+        });
+    </script>
+</body>
+</html>
