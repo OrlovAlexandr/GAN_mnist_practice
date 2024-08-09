@@ -39,7 +39,14 @@
         $(document).ready(function() {
             function updateImage() {
                 $.get("/get_latest_image", function(data) {
-                    $("#generated-image").attr("src", data.image_url);
+                    const tempImg = new Image();
+                    tempImg.onload = function(){
+                        $("#generated-image").attr("src", data.image_url);
+                    };
+                    tempImg.onerror = function() {
+                        setTimeout(updateImage, 1000);
+                    };
+                    tempImg.src = data.image_url;
                 });
             }
 
@@ -54,7 +61,10 @@
                 $.post("/start_training", function(data) {
                     alert(data.message);
                     if (data.status === "success") {
-                        setInterval(updateImage, 20000);
+                        const eventSource = new EventSource("/image_stream");
+                        eventSource.onmessage = function(event) {
+                            updateImage();
+                        };
                     }
                 });
             setInterval(updateImage, 20000);

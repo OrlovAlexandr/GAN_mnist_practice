@@ -1,8 +1,10 @@
 import threading
+import time
 from pathlib import Path
 
 from config import cfg
 from flask import Flask
+from flask import Response
 from flask import jsonify
 from flask import render_template
 from flask import request
@@ -14,6 +16,7 @@ app = Flask(__name__)
 
 training_started = False
 image_path = Path() / 'static' / 'images' / 'trains' / f'train_{cfg.now}' / 'images'
+latest_image_file: Path | None = None
 
 
 @app.route("/")
@@ -43,13 +46,24 @@ def update_config():
 
 @app.route("/get_latest_image")
 def get_latest_image():
-    if not image_path.exists():
+    global latest_image_file  # noqa: PLW0602
+    if latest_image_file is None:
         return jsonify({"image_url": ""})
-    # check if there are any images
-    if not any(image_path.iterdir()):
-        return jsonify({"image_url": ""})
-    latest_image = sorted(image_path.glob('*.png'))[-1]
-    return jsonify({"image_url": str(latest_image)})
+    return jsonify({"image_url": str(latest_image_file)})
+
+
+@app.route('/image_stream')
+def image_stream():
+    def stream():
+        global latest_image_file  # noqa: PLW0603
+        while True:
+            new_image_file = sorted(image_path.glob('*.png'))[-1] if any(image_path.iterdir()) else None
+            if new_image_file != latest_image_file:
+                latest_image_file = new_image_file
+                yield f"data: {latest_image_file.name}\n\n"
+            time.sleep(1)
+
+    return Response(stream(), content_type="text/event-stream")
 
 
 @app.route(f'/{image_path!s}/<path:filename>')
