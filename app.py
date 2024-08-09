@@ -52,13 +52,23 @@ def get_latest_image():
     return jsonify({"image_url": str(latest_image_file)})
 
 
+def is_file_complete(filepath):
+    try:
+        with filepath.open('rb') as f:
+            f.read()
+    except FileNotFoundError:
+        return False
+    else:
+        return True
+
+
 @app.route('/image_stream')
 def image_stream():
     def stream():
         global latest_image_file  # noqa: PLW0603
         while True:
             new_image_file = sorted(image_path.glob('*.png'))[-1] if any(image_path.iterdir()) else None
-            if new_image_file != latest_image_file:
+            if new_image_file != latest_image_file and is_file_complete(new_image_file):
                 latest_image_file = new_image_file
                 yield f"data: {latest_image_file.name}\n\n"
             time.sleep(1)
