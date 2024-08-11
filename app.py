@@ -1,95 +1,59 @@
 import threading
-import time
 from pathlib import Path
 
 from config import Optimizer
 from config import Strategy
 from config import cfg
 from flask import Flask
-from flask import Response
 from flask import jsonify
 from flask import render_template
 from flask import request
-from flask import send_from_directory
 from main import start_train
+from utils.parameters import stop_training_flag
+from utils.parameters import update_config
 
 
 app = Flask(__name__)
-
-training_started = False
-image_path = Path() / 'static' / 'images' / 'trains' / f'train_{cfg.now}' / 'images'
-latest_image_file: Path | None = None
+train_thread = None
 
 
-@app.route("/")
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template("index.html", config=cfg)
+    return render_template('index.html', cfg=cfg, Optimizer=Optimizer, Strategy=Strategy)
+
+
+@app.route('/update_config', methods=['POST'])
+def update_config_route():
+    data = request.json
+    update_config(data)
+    return jsonify(success=True)
 
 
 @app.route('/start_training', methods=['POST'])
 def start_training():
-    global training_started  # noqa: PLW0603
-    if not training_started:
-        training_thread = threading.Thread(target=start_train)
-        training_thread.start()
-        training_started = True
-        return jsonify({"status": "success", "message": "Training started!"})
-    return jsonify({"status": "error", "message": "Training already in progress."})
+    global train_thread  # noqa: PLW0603
+    if train_thread is None or not train_thread.is_alive():
+        train_thread = threading.Thread(target=start_train)
+        train_thread.start()
+    return jsonify(success=True)
 
 
-@app.route('/update_config', methods=['POST'])
-def update_config():
-    for key, value in request.form.items():
-        if hasattr(cfg, key):
-            current_value = getattr(cfg, key)
-            if isinstance(current_value, Optimizer):
-                setattr(cfg, key, Optimizer[value])
-            elif isinstance(current_value, Strategy):
-                setattr(cfg, key, Strategy[value])
-            elif isinstance(current_value, bool):
-                setattr(cfg, key, value == 'on')
-            else:
-                setattr(cfg, key, type(current_value)(value))
-    return jsonify({"message": "Configuration updated successfully!"})
+@app.route('/stop_training', methods=['POST'])
+def stop_training():
+    global train_thread  # noqa: PLW0602
+    stop_training_flag.set()
+    if train_thread and train_thread.is_alive():
+        train_thread.join()
+    return jsonify(success=True)
 
 
-@app.route("/get_latest_image")
-def get_latest_image():
-    global latest_image_file  # noqa: PLW0602
-    if latest_image_file is None:
-        return jsonify({"image_url": ""})
-    return jsonify({"image_url": str(latest_image_file)})
+@app.route('/get_images', methods=['GET'])
+def get_images():
+    images_dir = Path() / 'static' / 'images' / 'trains' / f'train_{cfg.now}' / 'images'
+    images = sorted(images_dir.glob('*.png'), key=lambda x: x.stat().st_mtime)
+    images = [str(img) for img in images]
+    return jsonify(images=images)
 
 
-def is_file_complete(filepath):
-    try:
-        with filepath.open('rb') as f:
-            f.read()
-    except FileNotFoundError:
-        return False
-    else:
-        return True
-
-
-@app.route('/image_stream')
-def image_stream():
-    def stream():
-        global latest_image_file  # noqa: PLW0603
-        while True:
-            if image_path.exists():
-                new_image_file = sorted(image_path.glob('*.png'))[-1] if any(image_path.iterdir()) else None
-                if new_image_file and new_image_file != latest_image_file and is_file_complete(new_image_file):
-                    latest_image_file = new_image_file
-                    yield f"data: {latest_image_file.name}\n\n"
-            time.sleep(1)
-
-    return Response(stream(), content_type="text/event-stream")
-
-
-@app.route(f'/{image_path}/<path:filename>')
-def static_images(filename):
-    return send_from_directory(str(image_path), filename)
-
-
-if __name__ == "__main__":
-    app.run(debug=False)
+if __name__ == '__main__':
+    app.run(debug=True)  # noqa: S201

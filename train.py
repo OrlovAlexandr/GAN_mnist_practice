@@ -18,6 +18,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from utils.gradient_penalty import gradient_penalty
 from utils.gradient_penalty import gradient_penalty_cond
+from utils.parameters import stop_training_flag
 from utils.plotting import create_text_block
 from utils.plotting import get_image
 
@@ -60,9 +61,15 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
     txt_blocks = create_text_block()
 
     for epoch in tqdm(range(cfg.num_epochs)):
+        if stop_training_flag.is_set():
+            logger.info("Training stopped by user at epoch %d", epoch)
+            break
         losses_disc_per_epoch, losses_gen_per_epoch = [], []
         losses_disc_per_batch, losses_gen_per_batch = [], []
         for batch_idx, (real, labels) in enumerate(loader):
+            if stop_training_flag.is_set():
+                logger.info("Training stopped by user at batch %d of epoch %d", batch_idx, epoch)
+                break
             real = real.to(device)  # noqa: PLW2901
             cur_batch_size = real.shape[0]
             if conditional:

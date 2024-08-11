@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from train import train_model
 from utils.parameters import create_train_path
+from utils.parameters import stop_training_flag
 
 
 logging.basicConfig(level=logging.INFO)
@@ -28,11 +29,18 @@ train = torchvision.datasets.FashionMNIST(
 
 
 def start_train():
+    stop_training_flag.clear()
+
     loader = DataLoader(train, batch_size=cfg.batch_size, shuffle=True)
     logger.info('Loaded data length: %d', len(loader))
 
     train_path = create_train_path()
     train_model(loader, train_path, cfg.conditional)
+
+
+def stop_train():
+    stop_training_flag.set()
+    logger.info("Training stop flag set by user.")
 
 
 if __name__ == '__main__':

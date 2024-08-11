@@ -22,28 +22,31 @@ class Strategy(enum.Enum):
 
 @dataclass
 class Config:
-    pass
+    learn_rate = 0.00005
+    batch_size = 64
+    img_size = 28
+    channels = 1
+    noise_size = 150
+    num_epochs = 70
+    feat_disc = 16
+    feat_gen = 16
+    disc_iters = 3
+    strategy = Strategy.GRAD_PENALTY  # Clipping weights = 0, Gradient penalty = 1
+    clip_value = 0.01
+    gp_lambda = 10
+    conditional = True
+    gen_embedding = 200
+    num_classes = 10
+    wgan = 1
+    adam_beta1 = 0.0
+    adam_beta2 = 0.9
+    optimizer = Optimizer.ADAM
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    now = get_time()
+
+    @staticmethod
+    def get_config():
+        return Config()
 
 
-cfg = Config()
-cfg.learn_rate = 0.00005
-cfg.batch_size = 64
-cfg.img_size = 28
-cfg.channels = 1
-cfg.noise_size = 150
-cfg.num_epochs = 70
-cfg.feat_disc = 16
-cfg.feat_gen = 16
-cfg.disc_iters = 3
-cfg.strategy = Strategy.GRAD_PENALTY  # Clipping weights = 0, Gradient penalty = 1
-cfg.clip_value = 0.01
-cfg.gp_lambda = 10
-cfg.conditional = True
-cfg.gen_embedding = 200
-cfg.num_classes = 10
-cfg.wgan = 1
-cfg.adam_beta1 = 0.0
-cfg.adam_beta2 = 0.9
-cfg.optimizer = Optimizer.ADAM
-cfg.device = "cuda" if torch.cuda.is_available() else "cpu"
-cfg.now = get_time()
+cfg = Config.get_config()
