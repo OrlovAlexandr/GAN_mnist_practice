@@ -32,7 +32,7 @@ def start_train():
     logger.info('Loaded data length: %d', len(loader))
 
     train_path = create_train_path()
-    train_model(loader, train_path)
+    train_model(loader, train_path, cfg.conditional)
 
 
 if __name__ == '__main__':

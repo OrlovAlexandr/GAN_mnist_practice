@@ -10,67 +10,165 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; }
         .form-group input, .form-group select { width: 100%; padding: 8px; }
+        .column { float: left; width: 45%; padding: 10px; box-sizing: border-box; margin-right: 5%; }
+        .column:last-child { margin-right: 0; /* Remove margin from the last column */ }
+        .row:after { content: ""; display: table; clear: both; }
+        #beta-fields { display: flex; }
+        #beta-fields .form-group { margin-right: 10px; }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>GAN Configurator</h1>
-        <form id="config-form">
-            <div class="form-group">
-                <label for="learn_rate">Learning Rate:</label>
-                <input type="text" id="learn_rate" name="learn_rate" value="{{ config.learn_rate }}">
-            </div>
-            <div class="form-group">
-                <label for="batch_size">Batch Size:</label>
-                <input type="text" id="batch_size" name="batch_size" value="{{ config.batch_size }}">
-            </div>
-            <div class="form-group">
-                <label for="num_epochs">Number of Epochs:</label>
-                <input type="text" id="num_epochs" name="num_epochs" value="{{ config.num_epochs }}">
-            </div>
-            <button type="submit">Update Configuration</button>
-        </form>
-        <button id="start-training">Start Training</button>
-        <h2>Generated Images</h2>
-        <img id="generated-image" src="" alt="Generated Image" width="100%">
-    </div>
+<div class="container">
+    <h1>GAN Configurator</h1>
+    <form id="config-form">
+        <div class="row">
+            <!-- OPTIMIZER -->
+            <div class="column">
+                <h3>Optimizer</h3>
+                <div class="form-group">
+                    <label for="optimizer">Optimizer:</label>
+                    <select id="optimizer" name="optimizer">
+                        <option value="ADAM" {% if config.optimizer=='ADAM' %}selected{% endif %}>ADAM</option>
+                        <option value="RMSP" {% if config.optimizer=='RMSP' %}selected{% endif %}>RMSP</option>
+                    </select>
+                </div>
+                <!-- ADAM BETA -->
+                <div id="beta-fields" style="display: none; flex;">
+                    <div class="form-group" style="margin-right: 10px;">
+                        <label for="adam_beta1">Beta 1</label>
+                        <input type="float" id="adam_beta1" name="adam_beta1" value="{{ config.adam_beta1 }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="adam_beta2">Beta 2</label>
+                        <input type="float" id="adam_beta2" name="adam_beta2" value="{{ config.adam_beta2 }}">
+                    </div>
+                </div>
 
-    <script>
-        $(document).ready(function() {
-            function updateImage() {
-                $.get("/get_latest_image", function(data) {
-                    const tempImg = new Image();
-                    tempImg.onload = function(){
-                        $("#generated-image").attr("src", data.image_url);
-                    };
-                    tempImg.onerror = function() {
-                        setTimeout(updateImage, 1000);
-                    };
-                    tempImg.src = data.image_url;
-                });
-            }
+                <div class="form-group">
+                    <label for="learn_rate">Learning Rate:</label>
+                    <input type="text" id="learn_rate" name="learn_rate" value="{{ config.learn_rate }}">
+                </div>
 
-            $("#config-form").on("submit", function(event) {
-                event.preventDefault();
-                $.post("/update_config", $(this).serialize(), function(data) {
-                    alert(data.message);
-                });
+                <h3>Model</h3>
+                <div class="form-group">
+                    <label for="noise_size">Noise Size:</label>
+                    <input type="text" id="noise_size" name="noise_size" value="{{ config.noise_size }}">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center;">
+                    <label for="conditional" style="margin-right: 10px;">Conditional</label>
+                    <input type="hidden" name="conditional" value="off">
+                    <input type="checkbox" id="conditional" name="conditional" {% if config.conditional %}checked{% endif %}>
+                </div>
+
+
+            </div>
+
+            <!-- TRAIN INFO -->
+            <div class="column">
+                <h3>Train</h3>
+                <div class="form-group">
+                    <label for="batch_size">Batch Size:</label>
+                    <input type="text" id="batch_size" name="batch_size" value="{{ config.batch_size }}">
+                </div>
+                <div class="form-group">
+                    <label for="num_epochs">Number of Epochs:</label>
+                    <input type="text" id="num_epochs" name="num_epochs" value="{{ config.num_epochs }}">
+                </div>
+                <div class="form-group">
+                    <label for="strategy">Strategy:</label>
+                    <select id="strategy" name="strategy">
+                        <option value="CLIP_WEIGHT" {% if config.strategy==
+                        'CLIP_WEIGHT' %}selected{% endif %}>CLIP_WEIGHT</option>
+                        <option value="GRAD_PENALTY" {% if config.strategy==
+                        'GRAD_PENALTY' %}selected{% endif %}>GRAD_PENALTY</option>
+                        <option value="NONE" {% if config.strategy==
+                        'NONE' %}selected{% endif %}>NONE</option>
+                    </select>
+                </div>
+                <div class="form-group" id="clip_value_group" style="display: none;">
+                    <label for="clip_value">Clip Value:</label>
+                    <input type="text" id="clip_value" name="clip_value" value="{{ config.clip_value }}">
+                </div>
+                <div class="form-group" id="gp_lambda_group" style="display: none;">
+                    <label for="gp_lambda">Lambda:</label>
+                    <input type="text" id="gp_lambda" name="gp_lambda" value="{{ config.gp_lambda }}">
+                </div>
+            </div>
+        </div>
+        <button type="submit">Update Configuration</button>
+    </form>
+    <button id="start-training">Start Training</button>
+    <h2>Generated Images</h2>
+    <img id="generated-image" src="" alt="Generated Image" width="100%">
+</div>
+
+<script>
+    $(document).ready(function() {
+        function updateImage() {
+            $.get("/get_latest_image", function(data) {
+                const tempImg = new Image();
+                tempImg.onload = function(){
+                    $("#generated-image").attr("src", data.image_url);
+                };
+                tempImg.onerror = function() {
+                    setTimeout(updateImage, 1000);
+                };
+                tempImg.src = data.image_url;
             });
+        }
+        function toggleFields() {
+            var strategy = $("#strategy").val();
+            if (strategy === "CLIP_WEIGHT") {
+                $("#clip_value_group").show();
+                $("#gp_lambda_group").hide();
+            } else if (strategy === "GRAD_PENALTY") {
+                $("#clip_value_group").hide();
+                $("#gp_lambda_group").show();
+            } else {
+                $("#clip_value_group").hide();
+                $("#gp_lambda_group").hide();
+            }
+        }
+        function toggleBetaFields() {
+            const optimizerSelect = document.getElementById('optimizer');
+            const betaFields = document.getElementById('beta-fields');
 
-            $("#start-training").on("click", function() {
-                $.post("/start_training", function(data) {
-                    alert(data.message);
-                    if (data.status === "success") {
-                        const eventSource = new EventSource("/image_stream");
-                        eventSource.onmessage = function(event) {
-                            updateImage();
-                        };
-                    }
-                });
-            setInterval(updateImage, 20000);
-            updateImage();
+            if (optimizerSelect.value === 'ADAM') {
+                betaFields.style.display = 'flex';
+            } else {
+                betaFields.style.display = 'none';
+            }
+        }
+
+        toggleFields(); // Initial check based on the current value
+        toggleBetaFields()
+        $("#strategy").change(toggleFields); // Check when strategy changes
+        $("#optimizer").change(toggleBetaFields); // Check when optimizer changes
+
+
+
+        $("#config-form").on("submit", function(event) {
+            event.preventDefault();
+            const formData = $(this).serialize();
+            console.log("Form data:", formData); // Log form data to verify
+            $.post("/update_config", formData, function(data) {
+                alert(data.message);
             });
         });
-    </script>
+
+        $("#start-training").on("click", function() {
+            $.post("/start_training", function(data) {
+                alert(data.message);
+                if (data.status === "success") {
+                    const eventSource = new EventSource("/image_stream");
+                    eventSource.onmessage = function(event) {
+                        updateImage();
+                    };
+                }
+            });
+        });
+    });
+</script>
 </body>
 </html>

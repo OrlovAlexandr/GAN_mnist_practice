@@ -1,14 +1,19 @@
-import io
+import io  # noqa: I001
 from datetime import datetime
 from pathlib import Path
 
 import cv2
+import matplotlib
 import numpy as np
 import torch
 import torchvision
+
 from config import Optimizer
 from config import Strategy
 from config import cfg
+
+matplotlib.use('Agg')
+
 from matplotlib import pyplot as plt
 
 
