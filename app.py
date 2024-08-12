@@ -51,8 +51,10 @@ def stop_training():
 def get_images():
     images_dir = Path() / 'static' / 'images' / 'trains' / f'train_{cfg.now}' / 'images'
     images = sorted(images_dir.glob('*.png'), key=lambda x: x.stat().st_mtime)
-    images = [str(img) for img in images]
-    return jsonify(images=images)
+    if images:
+        latest_image = str(images[-1])  # Получить путь к последнему изображению
+        return jsonify(image=latest_image)
+    return jsonify(image=None)
 
 
 if __name__ == '__main__':

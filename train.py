@@ -43,9 +43,10 @@ def train_model(loader: DataLoader,  # noqa: PLR0912, PLR0915
     generator_optimizer = model.generator_optimizer
     discriminator_optimizer = model.discriminator_optimizer
 
+    initialize_weights(generator)
+    initialize_weights(discriminator)
+
     if not conditional:
-        initialize_weights(generator)
-        initialize_weights(discriminator)
         fixed_noise = torch.randn(32, cfg.noise_size, 1, 1).to(device)
 
     # Tensorboard plotting
