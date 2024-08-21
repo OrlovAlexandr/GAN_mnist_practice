@@ -20,6 +20,11 @@ class Strategy(enum.Enum):
     NONE = enum.auto()
 
 
+class SequenceType(enum.Enum):
+    VIDEO = enum.auto()
+    GIF = enum.auto()
+
+
 @dataclass
 class Config:
     learn_rate = 0.00005
@@ -43,6 +48,10 @@ class Config:
     optimizer = Optimizer.ADAM
     device = "cuda" if torch.cuda.is_available() else "cpu"
     now = get_time()
+    sequence_type = SequenceType.GIF
+
+    def convert_to_dict(self):
+        return {k: getattr(self, k) for k in dir(self) if not k.startswith('_')}
 
     @staticmethod
     def get_config():

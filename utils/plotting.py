@@ -95,7 +95,7 @@ def anim_plot(
     plt.grid(which='major')
 
     ticks = [i * steps for i in range(int(num_epochs)) if i % 5 == 0]
-    labels = [i * 1 for i in range(int(num_epochs)) if i % 5 == 0]
+    labels = [str(i * 1) for i in range(int(num_epochs)) if i % 5 == 0]
     plt.xticks(ticks=ticks, labels=labels)
     plt.title('Losses')
 

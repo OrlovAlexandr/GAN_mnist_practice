@@ -1,4 +1,3 @@
-Here's the fixed README:
 
 # GAN Fashion MNIST practice
 
@@ -9,7 +8,6 @@ This project implements a Generative Adversarial Network (GAN) for training on t
 - [Usage](#usage)
 - [Features](#features)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Installation
@@ -34,19 +32,41 @@ python main.py
 
 This will start the training process. The training logs, including loss metrics and images generated during training, will be saved to the `imgs/trains` directory. You can monitor the training process using Tensorboard.
 
+### Web Interface
+
+A Flask-based web interface is provided to control and monitor the training process. To start the web server, run:
+
+```bash
+python app.py
+```
+
+Once the server is running, open your web browser and go to `http://127.0.0.1:5000`. The interface allows you to:
+- **Start/Stop Training**: Control the training process with simple buttons.
+- **Update Configuration**: Modify training parameters.
+- **Monitor Progress**: View the latest generated images directly from your browser.
+
 
 ## Features
 
 - **Conditional GAN Support**: Allows the model to be conditioned on specific labels, enabling the generation of digit images with specific characteristics.
 - **Discriminator Training Strategies**: Includes options for using gradient penalty or weight clipping during discriminator training.
 - **Tensorboard Integration**: Logs metrics, histograms, and images to Tensorboard for easy monitoring of the training process.
+- **Flask Web Interface**: Manage and monitor the GAN training process from your browser.
 - **Save Model and Output**: Automatically saves the trained generator model and generated images at specified intervals.
 
 ## Project Structure
 
-- `main.py`: The entry point script for training the GAN model.
-- `train.py`: The main script for training the GAN model.
-- `models.py`: Contains the GAN model definitions (generator, discriminator).
+- `app.py`: Flask application entry point.
 - `config.py`: Configuration file for setting up model parameters, options, and other settings.
+- `main.py`: Main training script logic.
+- `models.py`: Contains the GAN model definitions (generator, discriminator).
+- `train.py`: The main script for training the GAN model.
 - `requirements.txt`: Lists the required Python packages.
+- `templates/index.html`: HTML templates for the web interface.
+- `assets/`: Assets folder with images for this Readme.'
+- `static/`: Static assets for the web interface.
 - `utils/`: Utility folder with functions for initializing weights, computing gradient penalties, etc.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for more details.

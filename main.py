@@ -1,10 +1,12 @@
 import logging
+from pathlib import Path
 
 import torchvision
 from config import cfg
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from train import train_model
+from utils.get_video import save_sequence
 from utils.parameters import create_train_path
 from utils.parameters import stop_training_flag
 
@@ -36,6 +38,8 @@ def start_train():
 
     train_path = create_train_path()
     train_model(loader, train_path, cfg.conditional)
+    images_dir = Path() / 'static' / 'trains' / f'train_{cfg.now}' / 'images'
+    save_sequence(images_dir, sequence_type=cfg.sequence_type, every_n_image=1, fps=2)
 
 
 def stop_train():

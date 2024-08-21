@@ -2,6 +2,7 @@ import threading
 from pathlib import Path
 
 from config import Optimizer
+from config import SequenceType
 from config import Strategy
 from config import cfg
 from flask import Flask
@@ -19,7 +20,13 @@ train_thread = None
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', cfg=cfg, Optimizer=Optimizer, Strategy=Strategy)
+    return render_template(
+        'index.html',
+        cfg=cfg,
+        Optimizer=Optimizer,
+        Strategy=Strategy,
+        SequenceType=SequenceType,
+    )
 
 
 @app.route('/update_config', methods=['POST'])
@@ -49,10 +56,11 @@ def stop_training():
 
 @app.route('/get_images', methods=['GET'])
 def get_images():
-    images_dir = Path() / 'static' / 'images' / 'trains' / f'train_{cfg.now}' / 'images'
+    images_dir = Path() / 'static' / 'trains' / f'train_{cfg.now}' / 'images'
     images = sorted(images_dir.glob('*.png'), key=lambda x: x.stat().st_mtime)
+
     if images:
-        latest_image = str(images[-1])  # Получить путь к последнему изображению
+        latest_image = str(images[-1])
         return jsonify(image=latest_image)
     return jsonify(image=None)
 
