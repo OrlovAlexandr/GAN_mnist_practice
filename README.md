@@ -54,6 +54,7 @@ Once the server is running, open your web browser and go to `http://127.0.0.1:50
 - **Discriminator Training Strategies**: Includes options for using gradient penalty or weight clipping during discriminator training.
 - **Tensorboard Integration**: Logs metrics, histograms, and images to Tensorboard for easy monitoring of the training process.
 - **Flask Web Interface**: Manage and monitor the GAN training process from your browser.
+- **View Latest Generated Image**: Display the most recent output image on the web interface.
 - **Save Model and Output**: Automatically saves the trained generator model and generated images at specified intervals.
 
 ## Project Structure
@@ -68,6 +69,14 @@ Once the server is running, open your web browser and go to `http://127.0.0.1:50
 - `assets/`: Assets folder with images for this Readme.
 - `static/`: Static assets for the web interface.
 - `utils/`: Utility folder with functions for initializing weights, computing gradient penalties, etc.
+
+## Example Output
+
+Below is a GIF that demonstrates the output of the GAN model during training on the MNIST dataset. This example shows the progression of generated images over time.
+
+<p align="center">
+  <img src="assets/sequence_example.gif" alt="GAN MNIST Example" width="800" height="450">
+</p>
 
 ## License
 
