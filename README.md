@@ -75,7 +75,7 @@ Once the server is running, open your web browser and go to `http://127.0.0.1:50
 Below is a GIF that demonstrates the output of the GAN model during training on the MNIST dataset. This example shows the progression of generated images over time.
 
 <p align="center">
-  <img src="assets/sequence_example.gif" alt="GAN MNIST Example" width="800" height="450">
+  <img src="assets/sequence_example.gif" alt="GAN MNIST Example">
 </p>
 
 ## License
