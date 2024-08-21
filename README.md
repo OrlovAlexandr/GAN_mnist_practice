@@ -3,6 +3,8 @@
 
 This project implements a Generative Adversarial Network (GAN) for training on the Fashion MNIST dataset. The primary goal of this project is to practice training a GAN model and experimenting with different training strategies. The code includes support for conditional GANs, different strategies for discriminator training, and tensorboard logging for visualizing training progress.
 
+The project also includes a Flask web interface for controlling and monitoring the training process.
+
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
@@ -63,7 +65,7 @@ Once the server is running, open your web browser and go to `http://127.0.0.1:50
 - `train.py`: The main script for training the GAN model.
 - `requirements.txt`: Lists the required Python packages.
 - `templates/index.html`: HTML templates for the web interface.
-- `assets/`: Assets folder with images for this Readme.'
+- `assets/`: Assets folder with images for this Readme.
 - `static/`: Static assets for the web interface.
 - `utils/`: Utility folder with functions for initializing weights, computing gradient penalties, etc.
 
